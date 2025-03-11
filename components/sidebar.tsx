@@ -1,7 +1,9 @@
 import { roomDetail } from '@/redux/roomSlice';
+import { initializeApp } from 'firebase/app';
+import { getDatabase, onValue, ref } from 'firebase/database';
 import { AddCircleIcon } from 'hugeicons-react';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import InitialsAvatar from 'react-initials-avatar';
 import 'react-initials-avatar/lib/ReactInitialsAvatar.css';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,15 +11,45 @@ import Modal from './modal';
 
 const Sidebar = () => {
 
+    const firebaseConfig = {
+        apiKey: "AIzaSyAxRZpGt9LzRYRtQB-pFmpY6ubZ-KgearM",
+        databaseURL: "https://chater-3aa14-default-rtdb.asia-southeast1.firebasedatabase.app",
+        authDomain: "chater-3aa14.firebaseapp.com",
+        projectId: "chater-3aa14",
+        storageBucket: "chater-3aa14.firebasestorage.app",
+        messagingSenderId: "759599094950",
+        appId: "1:759599094950:web:f67662da7cfffd015b6867",
+        measurementId: "G-98V0C0DFTE"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
     const [isModal, setIsModal] = useState<boolean>(false)
+    const [groups, setGroups] = useState<any[]>([])
 
     const Router = useRouter()
     const dispatch = useDispatch()
     const rooms = useSelector((state: any) => state.room.rooms)
-    const dataArray = Object.keys(rooms).map((key) => ({
-        id: key,
-        ...rooms[key],
-    }));
+
+    useEffect(() => {
+        console.log('id room:', roomDetail.idRoom)
+        const groupRef = ref(database, `rooms`);
+        const unsubscribe = onValue(groupRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const groupList = Object.values(data);
+                setGroups(groupList);
+            } else {
+                setGroups([])
+            }
+            console.log('data:', data)
+        });
+
+        return () => {
+            unsubscribe();
+        };
+    }, []);
 
     const handleDetailRoom = (data: any) => {
         dispatch(roomDetail(data))
@@ -35,8 +67,8 @@ const Sidebar = () => {
                 </div>
                 <div className='w-full h-[90vh] overflow-y-auto'>
                     {
-                        dataArray?.length > 0 ?
-                            dataArray?.map((data: any, index: number) => (
+                        groups?.length > 0 ?
+                            groups?.map((data: any, index: number) => (
                                 <div key={index} onClick={() => handleDetailRoom(data)} className='active:scale-[0.99] hover:brightness-[97%] duration-100 cursor-pointer bg-white w-full p-4 border-b gap-2 border-slate-300 flex items-center'>
                                     <div className='w-[10%]'>
                                         <InitialsAvatar name={data?.name} />
