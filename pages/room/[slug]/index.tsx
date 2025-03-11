@@ -8,9 +8,9 @@ import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 // import io from 'socket.io-client';
-import Swal from 'sweetalert2';
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, push, remove } from "firebase/database";
+import { getDatabase, onValue, push, ref, remove } from "firebase/database";
+import Swal from 'sweetalert2';
 
 // const socket = io('http://localhost:3600', {
 //     withCredentials: true,
@@ -71,7 +71,9 @@ const Room = () => {
         };
     }, [roomDetail.idRoom, decodedSlug]);
 
-    const handleSendMessage = () => {
+    const handleSendMessage = (e: React.MouseEvent<HTMLButtonElement | HTMLElement>) => {
+        e.preventDefault()
+
         if (!roomDetail || !content) return; // Pastikan roomID dan pesan tidak kosong
         const randomNum = Math.random().toString(36).substr(2, 5); // 5 karakter random
 
@@ -185,10 +187,10 @@ const Room = () => {
                         }
                     </div>
                     <div className='w-full h-[12%] bg-white shadow-md px-6 flex justify-between items-center'>
-                        <form onSubmit={() => handleSendMessage()}>
+                        <form onSubmit={(e: React.MouseEvent<HTMLFormElement>) => handleSendMessage(e)}>
                             <input name='content' value={content} className='w-[96%] h-[70%] rounded-full bg-slate-200 text-[14px] outline-0 p-4 text-black' placeholder='Kirim pesan sekarang...' onChange={(e: React.ChangeEvent<HTMLInputElement>) => setContent(e.target.value)}></input>
                         </form>
-                        <TelegramIcon onClick={() => handleSendMessage()} className='active:scale-[0.99] hover:brightness-95 text-black' />
+                        <TelegramIcon onClick={(e: React.MouseEvent<any>) => handleSendMessage(e)} className='active:scale-[0.99] hover:brightness-95 text-black' />
                     </div>
                 </div>
             </div>
